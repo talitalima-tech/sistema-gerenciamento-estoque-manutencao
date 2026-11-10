@@ -181,7 +181,7 @@ public class bill extends javax.swing.JFrame {
         try {
             
             Class.forName("java.sql.DriverManager");
-            Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/fs", "root", "");
+            Connection con = DatabaseConnection.getConnection();
              Statement stmt = con.createStatement();
             String query = "select item_id,item_name,quantity,price,totprice,MAX(biilno),date from bill";
         ResultSet rs = stmt.executeQuery(query);

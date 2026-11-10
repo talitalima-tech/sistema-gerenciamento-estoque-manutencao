@@ -308,7 +308,7 @@ public class Searchproduct extends javax.swing.JFrame {
          DefaultTableModel model = (DefaultTableModel) table.getModel();
            try {
             Class.forName("java.sql.DriverManager");
-            Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/fs", "root", "");
+            Connection con = DatabaseConnection.getConnection();
 
             Statement stmt = con.createStatement();
              String query = "select * from inventory where item_id='"+ii+"' ";
@@ -410,7 +410,7 @@ public class Searchproduct extends javax.swing.JFrame {
     
         try{
              Class.forName("com.mysql.jdbc.Driver");
-             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/fs","root","");
+             Connection con = DatabaseConnection.getConnection();
              String query = "insert into cart(item_id,item_name,quantity,price,totprice) values('"+item_id+"','"+item_name+"','"+quantity+"','"+price+"','"+totprice+"')";
              Statement smt3=con.createStatement();
          //ResultSet   rs=smt3.executeQueryUpdate(query);

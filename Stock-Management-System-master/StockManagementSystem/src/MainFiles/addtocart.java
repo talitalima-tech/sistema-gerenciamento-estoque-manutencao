@@ -160,7 +160,7 @@ public class addtocart extends javax.swing.JFrame {
       //   ProductInformation.categoryChooser = "electronics";
         try {
             Class.forName("java.sql.DriverManager");
-            Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/fs", "root", "");
+            Connection con = DatabaseConnection.getConnection();
 
             Statement stmt = con.createStatement();
             String query = "select * from cart ";
@@ -219,7 +219,7 @@ try
              String d=model.getValueAt(selectedRowIndex,3).toString(); 
              String e=model.getValueAt(selectedRowIndex,4).toString();
     Class.forName("com.mysql.jdbc.Driver");
-             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/fs","root","");
+        Connection con = DatabaseConnection.getConnection();
              String query = "insert into bill(item_id,item_name,quantity,price,totprice) values('"+a+"','"+b+"','"+c+"','"+d+"','"+e+"')";
              Statement smt3=con.createStatement();
          //ResultSet   rs=smt3.executeQueryUpdate(query);
@@ -255,7 +255,7 @@ catch(Exception e)
          try{
              
         Class.forName("com.mysql.jdbc.Driver");
-       c=DriverManager.getConnection("jdbc:mysql://localhost/fs","root","");
+        c = DatabaseConnection.getConnection();
        s=c.createStatement();
 
   DefaultTableModel model = (DefaultTableModel) table2.getModel();   
@@ -302,7 +302,7 @@ catch(Exception e)
          }
          try {
             Class.forName("java.sql.DriverManager");
-            Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/fs", "root", "");
+            Connection con = DatabaseConnection.getConnection();
 
             Statement stmt = con.createStatement();
             String query = "delete from cart ";

@@ -161,7 +161,7 @@ public class Inventory extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         try {
             Class.forName("java.sql.DriverManager");
-            Connection con = (Connection) DriverManager.getConnection("jdbc:mysql://localhost:3306/fs", "root", "");
+            Connection con = DatabaseConnection.getConnection();
 
             Statement stmt = con.createStatement();
             String query = "select * from inventory ";
