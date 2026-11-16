@@ -175,10 +175,41 @@ public class supplierapprove extends javax.swing.JFrame {
         }
 
         int sum = 0;
-        for (int i = 0; i < table2.getRowCount(); i++) {
-            sum = sum + Integer.parseInt(table2.getValueAt(i, 4).toString());
+
+        try {
+            for (int i = 0; i < table2.getRowCount(); i++) {
+                Object valor = table2.getValueAt(i, 4);
+
+                if (valor == null || valor.toString().trim().isEmpty()) {
+                    throw new NumberFormatException(
+                            "Valor vazio na linha " + (i + 1));
+                }
+
+                int precoTotal = Integer.parseInt(valor.toString().trim());
+
+                if (precoTotal < 0) {
+                    throw new NumberFormatException(
+                            "Valor negativo na linha " + (i + 1));
+                }
+
+                sum = Math.addExact(sum, precoTotal);
+            }
+
+            jLabel2.setText(Integer.toString(sum));
+
+        } catch (NumberFormatException | ArithmeticException e) {
+            jLabel2.setText("Erro");
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Não foi possível calcular o total das compras. "
+                            + "Verifique os valores dos produtos.",
+                    "Erro no cálculo",
+                    JOptionPane.ERROR_MESSAGE);
+
+            return;
         }
-        jLabel2.setText(Integer.toString(sum));
+
         // String b=jLabel2.getText();
 
         // TODO add your handling code here:

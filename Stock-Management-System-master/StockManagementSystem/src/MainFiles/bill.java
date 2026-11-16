@@ -222,10 +222,41 @@ public class bill extends javax.swing.JFrame {
         }
 
         int sum = 0;
-        for (int i = 0; i < jTable1.getRowCount(); i++) {
-            sum = sum + Integer.parseInt(jTable1.getValueAt(i, 4).toString());
+
+        try {
+            for (int i = 0; i < jTable1.getRowCount(); i++) {
+                Object valor = jTable1.getValueAt(i, 4);
+
+                if (valor == null || valor.toString().trim().isEmpty()) {
+                    throw new NumberFormatException(
+                            "Valor vazio na linha " + (i + 1));
+                }
+
+                int precoTotal = Integer.parseInt(valor.toString().trim());
+
+                if (precoTotal < 0) {
+                    throw new NumberFormatException(
+                            "Valor negativo na linha " + (i + 1));
+                }
+
+                sum = Math.addExact(sum, precoTotal);
+            }
+
+            jLabel6.setText(Integer.toString(sum));
+
+        } catch (NumberFormatException | ArithmeticException e) {
+            jLabel6.setText("Erro");
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Não foi possível calcular o total da fatura. "
+                            + "Verifique os valores dos produtos.",
+                    "Erro no cálculo",
+                    JOptionPane.ERROR_MESSAGE);
+
+            return;
         }
-        jLabel6.setText(Integer.toString(sum));
+
         MessageFormat header = new MessageFormat("Invoice Print");
         MessageFormat footer = new MessageFormat("Page");
         try {

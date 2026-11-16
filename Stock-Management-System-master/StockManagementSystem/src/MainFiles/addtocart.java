@@ -329,10 +329,19 @@ public class addtocart extends javax.swing.JFrame {
             bill mm = new bill();
             mm.setVisible(true);
 
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Quantidade inválida. Informe um número inteiro válido.",
+                    "Erro de validação",
+                    JOptionPane.WARNING_MESSAGE);
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Erro ao faturar produto: " + e.getMessage());
+                    "Erro ao faturar produto: " + e.getMessage(),
+                    "Erro no faturamento",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 

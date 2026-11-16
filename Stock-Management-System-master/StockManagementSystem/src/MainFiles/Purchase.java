@@ -423,13 +423,36 @@ public class Purchase extends javax.swing.JFrame {
     }// GEN-LAST:event_jTextField3MouseClicked
 
     private void jTextField3MouseExited(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jTextField3MouseExited
-        String qun = jTextField3.getText();
-        String pri = jTextField4.getText();
-        int N3 = Integer.parseInt(pri);
-        int N1 = Integer.parseInt(qun);
-        int N2 = N1;
-        int N4 = N1 * (N3 - 10);
-        jTextField5.setText(String.valueOf(N4)); // TODO add your handling code here:
+
+        String quantidadeTexto = jTextField3.getText().trim();
+        String precoTexto = jTextField4.getText().trim();
+
+        // Verifica se os campos estão preenchidos
+        if (quantidadeTexto.isEmpty() || precoTexto.isEmpty()) {
+            jTextField5.setText("");
+            return;
+        }
+
+        try {
+            int quantidade = Integer.parseInt(quantidadeTexto);
+            int preco = Integer.parseInt(precoTexto);
+
+            // Impede valores inválidos
+            if (quantidade <= 0 || preco < 10) {
+                jTextField5.setText("");
+                return;
+            }
+
+            // Preserva a regra original de cálculo
+            int total = Math.multiplyExact(quantidade, preco - 10);
+
+            jTextField5.setText(String.valueOf(total));
+
+        } catch (NumberFormatException | ArithmeticException e) {
+            // Evita erros com entradas inválidas ou valores muito grandes
+            jTextField5.setText("");
+        }
+
     }// GEN-LAST:event_jTextField3MouseExited
 
     private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField3ActionPerformed
