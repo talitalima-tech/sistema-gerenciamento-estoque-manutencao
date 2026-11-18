@@ -448,55 +448,118 @@ public class returnproduct extends javax.swing.JFrame {
     }
 
     public void workWithDatabase() {
-
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        int selectedRowIndex = table.getSelectedRow();
+        int selectedRow = table.getSelectedRow();
 
-        if (selectedRowIndex == -1) {
+        if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Selecione um produto.");
             return;
         }
 
-        String itemId = model.getValueAt(selectedRowIndex, 0).toString();
-
-        int quantity;
+        String billText = bid.getText().trim();
+        String itemId = model.getValueAt(selectedRow, 0).toString();
+        int billNo;
+        int returnQuantity;
 
         try {
-            quantity = Integer.parseInt(jTextField3.getText().trim());
+            billNo = Integer.parseInt(billText);
+            returnQuantity = Integer.parseInt(jTextField3.getText().trim());
 
-            if (quantity <= 0) {
+            if (billNo <= 0 || returnQuantity <= 0) {
                 JOptionPane.showMessageDialog(
-                        this, "A quantidade deve ser maior que zero.");
+                        this, "Informe uma nota e uma quantidade válidas.");
                 return;
             }
-
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
-                    this, "Informe uma quantidade válida.");
+                    this, "Informe uma nota e uma quantidade numéricas.");
             return;
         }
 
-        String updateQuery = "UPDATE inventory SET quantity = quantity + ? WHERE item_id = ?";
+        String selectBill = "SELECT quantity, returned_quantity FROM bill " +
+                "WHERE biilno = ? AND item_id = ? FOR UPDATE";
 
-        try (
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement stmt = con.prepareStatement(updateQuery)) {
-            stmt.setInt(1, quantity);
-            stmt.setString(2, itemId);
+        String updateInventory = "UPDATE inventory SET quantity = quantity + ? WHERE item_id = ?";
 
-            int updated = stmt.executeUpdate();
+        String updateBill = "UPDATE bill SET returned_quantity = returned_quantity + ? " +
+                "WHERE biilno = ? AND item_id = ? " +
+                "AND returned_quantity + ? <= quantity";
 
-            if (updated == 1) {
+        try (Connection con = DatabaseConnection.getConnection()) {
+            con.setAutoCommit(false);
+
+            try {
+                int soldQuantity;
+                int alreadyReturned;
+
+                try (PreparedStatement stmt = con.prepareStatement(selectBill)) {
+                    stmt.setInt(1, billNo);
+                    stmt.setString(2, itemId);
+
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            con.rollback();
+                            JOptionPane.showMessageDialog(
+                                    this, "Venda não encontrada.");
+                            return;
+                        }
+
+                        soldQuantity = rs.getInt("quantity");
+                        alreadyReturned = rs.getInt("returned_quantity");
+                    }
+                }
+
+                int available = soldQuantity - alreadyReturned;
+
+                if (returnQuantity > available) {
+                    con.rollback();
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Quantidade disponível para devolução: " + available);
+                    return;
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updateInventory)) {
+                    stmt.setInt(1, returnQuantity);
+                    stmt.setString(2, itemId);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Produto não encontrado no estoque.");
+                    }
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updateBill)) {
+                    stmt.setInt(1, returnQuantity);
+                    stmt.setInt(2, billNo);
+                    stmt.setString(3, itemId);
+                    stmt.setInt(4, returnQuantity);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException("Não foi possível registrar a devolução.");
+                    }
+                }
+
+                con.commit();
+
                 JOptionPane.showMessageDialog(
-                        this, "Produto devolvido ao estoque com sucesso.");
-            } else {
+                        this, "Produto devolvido com sucesso.");
+
+                model.setRowCount(0);
+                jTextField1.setText("");
+                jTextField2.setText("");
+                jTextField3.setText("");
+                jTextField4.setText("");
+                jTextField5.setText("");
+
+            } catch (SQLException e) {
+                con.rollback();
                 JOptionPane.showMessageDialog(
-                        this, "Produto não encontrado no estoque.");
+                        this, "Erro ao devolver produto: " + e.getMessage());
             }
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro ao devolver produto: " + e.getMessage());
+                    this, "Erro de conexão: " + e.getMessage());
         }
     }
 

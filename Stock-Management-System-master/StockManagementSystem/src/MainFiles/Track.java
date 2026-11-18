@@ -216,9 +216,8 @@ public class Track extends javax.swing.JFrame {
         mm.setVisible(true);
     }// GEN-LAST:event_jButton2MouseClicked
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
-
-        // TODO add your handling code here:
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        jButton1MouseClicked(null);
     }// GEN-LAST:event_jButton1ActionPerformed
 
     private void tableMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_tableMouseClicked

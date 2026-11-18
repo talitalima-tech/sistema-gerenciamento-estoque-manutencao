@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import java.sql.PreparedStatement;
 
@@ -403,16 +404,27 @@ public class Purchase extends javax.swing.JFrame {
         // TODO add your handling code here:
     }// GEN-LAST:event_jTextField1ActionPerformed
 
-    private void tableMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_tableMouseClicked
+    private void tableMouseClicked(java.awt.event.MouseEvent evt) {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-        int selectedRowIndex = table.getSelectedRow();
-        jTextField1.setText(model.getValueAt(selectedRowIndex, 0).toString());
-        jTextField2.setText(model.getValueAt(selectedRowIndex, 1).toString());
-        // String s=model.getValueAt(selectedRowIndex,2).toString();
-        jTextField4.setText(model.getValueAt(selectedRowIndex, 3).toString());
-        // jTextField5.setText(model.getValueAt(selectedRowIndex,0).toString());
 
-    }// GEN-LAST:event_tableMouseClicked
+        int selectedRowIndex = table.getSelectedRow();
+
+        if (selectedRowIndex == -1) {
+            return;
+        }
+
+        int modelRow = table.convertRowIndexToModel(selectedRowIndex);
+
+        // Item ID
+        jTextField2.setText(model.getValueAt(modelRow, 0).toString());
+
+        // Item Name
+        jTextField1.setText(model.getValueAt(modelRow, 1).toString());
+
+        // Price Per Unit
+        jTextField4.setText(model.getValueAt(modelRow, 3).toString());
+    }
+    // GEN-LAST:event_tableMouseClicked
 
     private void jTextField3MouseEntered(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jTextField3MouseEntered
 
@@ -461,8 +473,8 @@ public class Purchase extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton3ActionPerformed
 
-        String item_id = jTextField1.getText();
-        String item_name = jTextField2.getText();
+        String item_id = jTextField2.getText();
+        String item_name = jTextField1.getText();
         String quantity = jTextField3.getText();
         String price = jTextField4.getText();
         String totprice = jTextField5.getText();
@@ -502,101 +514,221 @@ public class Purchase extends javax.swing.JFrame {
 
     public void workWithDatabase() {
 
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        int selectedRowIndex = table.getSelectedRow();
+        int selectedRow = table.getSelectedRow();
 
-        if (selectedRowIndex == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto.");
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(
+                    this, "Selecione um produto na tabela.");
             return;
         }
 
-        String itemId = model.getValueAt(selectedRowIndex, 0).toString();
+        String itemId = table.getValueAt(selectedRow, 0).toString();
 
-        int quantity;
+        int returnQuantity;
 
         try {
-            quantity = Integer.parseInt(jTextField3.getText().trim());
+            returnQuantity = Integer.parseInt(
+                    jTextField3.getText().trim());
 
-            if (quantity <= 0) {
+            if (returnQuantity <= 0) {
                 JOptionPane.showMessageDialog(
                         this, "A quantidade deve ser maior que zero.");
                 return;
             }
+
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
                     this, "Informe uma quantidade válida.");
             return;
         }
 
-        String selectQuery = "SELECT quantity FROM inventory WHERE item_id = ? FOR UPDATE";
+        Integer billNo;
 
-        String updateQuery = "UPDATE inventory SET quantity = ? WHERE item_id = ?";
+        try {
+            billNo = selecionarPedidoParaDevolucao(itemId);
+
+            if (billNo == null) {
+                return;
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(
+                    this, "Erro ao consultar pedidos: " + e.getMessage());
+            return;
+        }
+
+        String selectPurchase = "SELECT item_id, received_quantity, returned_quantity, status " +
+                "FROM purchase WHERE biilno = ? FOR UPDATE";
+
+        String updateInventory = "UPDATE inventory SET quantity = quantity - ? " +
+                "WHERE item_id = ? AND quantity >= ?";
+
+        String updatePurchase = "UPDATE purchase SET returned_quantity = returned_quantity + ? " +
+                "WHERE biilno = ?";
 
         try (Connection con = DatabaseConnection.getConnection()) {
 
             con.setAutoCommit(false);
 
-            try (
-                    PreparedStatement selectStmt = con.prepareStatement(selectQuery);
-                    PreparedStatement updateStmt = con.prepareStatement(updateQuery)) {
-                selectStmt.setString(1, itemId);
+            try {
+                int received;
+                int returned;
+                String status;
 
-                int currentQuantity;
+                try (PreparedStatement stmt = con.prepareStatement(selectPurchase)) {
 
-                try (ResultSet rs = selectStmt.executeQuery()) {
+                    stmt.setInt(1, billNo);
 
-                    if (!rs.next()) {
-                        JOptionPane.showMessageDialog(
-                                this, "Produto não encontrado no estoque.");
-                        con.rollback();
-                        return;
+                    try (ResultSet rs = stmt.executeQuery()) {
+
+                        if (!rs.next()) {
+                            throw new SQLException("Pedido não encontrado.");
+                        }
+
+                        if (!itemId.equals(rs.getString("item_id"))) {
+                            throw new SQLException(
+                                    "O pedido não pertence ao produto selecionado.");
+                        }
+
+                        received = rs.getInt("received_quantity");
+                        returned = rs.getInt("returned_quantity");
+                        status = rs.getString("status");
                     }
-
-                    currentQuantity = rs.getInt("quantity");
                 }
 
-                if (quantity > currentQuantity) {
-                    JOptionPane.showMessageDialog(
-                            this, "Quantidade insuficiente no estoque.");
-                    con.rollback();
-                    return;
-                }
-
-                int newQuantity = currentQuantity - quantity;
-
-                updateStmt.setInt(1, newQuantity);
-                updateStmt.setString(2, itemId);
-
-                int updated = updateStmt.executeUpdate();
-
-                if (updated != 1) {
+                if (!"RECEIVED".equals(status)) {
                     throw new SQLException(
-                            "Não foi possível atualizar o estoque.");
+                            "O pedido ainda não foi recebido.");
+                }
+
+                int available = received - returned;
+
+                if (returnQuantity > available) {
+                    throw new SQLException(
+                            "Quantidade máxima disponível para devolução: "
+                                    + available);
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updateInventory)) {
+
+                    stmt.setInt(1, returnQuantity);
+                    stmt.setString(2, itemId);
+                    stmt.setInt(3, returnQuantity);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "Estoque insuficiente para devolução.");
+                    }
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updatePurchase)) {
+
+                    stmt.setInt(1, returnQuantity);
+                    stmt.setInt(2, billNo);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "Não foi possível registrar a devolução.");
+                    }
                 }
 
                 con.commit();
 
                 JOptionPane.showMessageDialog(
-                        this, "Estoque atualizado com sucesso.");
+                        this, "Devolução registrada com sucesso!");
 
             } catch (SQLException e) {
-                try {
-                    con.rollback();
-                } catch (SQLException rollbackError) {
-                    e.addSuppressed(rollbackError);
-                }
+                con.rollback();
                 throw e;
             }
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro ao atualizar estoque: " + e.getMessage());
+                    this, "Erro na devolução: " + e.getMessage());
         }
     }
 
     /**
      * @param args the command line arguments
      */
+
+    // nova parte
+
+    private Integer selecionarPedidoParaDevolucao(String itemId)
+            throws SQLException {
+
+        String sql = "SELECT biilno, received_quantity, returned_quantity " +
+                "FROM purchase " +
+                "WHERE item_id = ? AND status = 'RECEIVED' " +
+                "AND received_quantity > returned_quantity " +
+                "ORDER BY biilno DESC";
+
+        DefaultTableModel model = new DefaultTableModel(
+                new Object[] {
+                        "Pedido", "Recebidas", "Devolvidas", "Disponíveis"
+                }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        try (Connection con = DatabaseConnection.getConnection();
+                PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, itemId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int received = rs.getInt("received_quantity");
+                    int returned = rs.getInt("returned_quantity");
+
+                    model.addRow(new Object[] {
+                            rs.getInt("biilno"),
+                            received,
+                            returned,
+                            received - returned
+                    });
+                }
+            }
+        }
+
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(
+                    this, "Nenhum pedido recebido disponível para devolução.");
+            return null;
+        }
+
+        JTable pedidosTable = new JTable(model);
+        pedidosTable.setSelectionMode(
+                javax.swing.ListSelectionModel.SINGLE_SELECTION);
+
+        pedidosTable.setRowSelectionInterval(0, 0);
+
+        int option = JOptionPane.showConfirmDialog(
+                this,
+                new javax.swing.JScrollPane(pedidosTable),
+                "Selecione o pedido para devolução",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+
+        if (option != JOptionPane.OK_OPTION) {
+            return null;
+        }
+
+        int selectedRow = pedidosTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+            return null;
+        }
+
+        int modelRow = pedidosTable.convertRowIndexToModel(selectedRow);
+
+        return (Integer) model.getValueAt(modelRow, 0);
+    }
+
+    // fim da nova parte
+
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code

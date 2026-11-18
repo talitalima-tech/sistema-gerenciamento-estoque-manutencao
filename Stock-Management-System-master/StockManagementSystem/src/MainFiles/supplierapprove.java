@@ -56,10 +56,11 @@ public class supplierapprove extends javax.swing.JFrame {
 
                 },
                 new String[] {
-                        "item_id", "item_name", "quantity", "unit price", "total price"
+                        "biilno", "item_id", "item_name",
+                        "quantity", "unit price", "total price"
                 }) {
             boolean[] canEdit = new boolean[] {
-                    false, false, false, false, false
+                    false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -159,6 +160,7 @@ public class supplierapprove extends javax.swing.JFrame {
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery("SELECT * FROM purchase")) {
             while (rs.next()) {
+                String billNo = rs.getString("biilno");
                 String id = rs.getString("item_id");
                 String name = rs.getString("item_name");
                 String quantity = rs.getString("quantity");
@@ -166,7 +168,7 @@ public class supplierapprove extends javax.swing.JFrame {
                 String totalPrice = rs.getString("totprice");
 
                 model.addRow(new Object[] {
-                        id, name, quantity, price, totalPrice
+                        billNo, id, name, quantity, price, totalPrice
                 });
             }
 
@@ -228,57 +230,91 @@ public class supplierapprove extends javax.swing.JFrame {
     }
 
     public void workWithDatabase() {
+        int selectedRow = table2.getSelectedRow();
 
-        DefaultTableModel model = (DefaultTableModel) table2.getModel();
-        int selectedRowIndex = table2.getSelectedRow();
-
-        if (selectedRowIndex == -1) {
-            JOptionPane.showMessageDialog(
-                    this, "Selecione uma solicitação de compra.");
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um pedido.");
             return;
         }
 
-        String itemId = model.getValueAt(selectedRowIndex, 0).toString();
+        int billNo = Integer.parseInt(
+                table2.getValueAt(selectedRow, 0).toString());
 
-        int quantity;
+        String selectSql = "SELECT item_id, quantity, status FROM purchase " +
+                "WHERE biilno = ? FOR UPDATE";
 
-        try {
-            quantity = Integer.parseInt(
-                    model.getValueAt(selectedRowIndex, 2).toString());
+        String updateInventorySql = "UPDATE inventory SET quantity = quantity + ? " +
+                "WHERE item_id = ?";
 
-            if (quantity <= 0) {
+        String updatePurchaseSql = "UPDATE purchase SET status = 'RECEIVED', " +
+                "received_quantity = ? WHERE biilno = ?";
+
+        try (Connection con = DatabaseConnection.getConnection()) {
+
+            con.setAutoCommit(false);
+
+            try {
+                String itemId;
+                int quantity;
+                String status;
+
+                try (PreparedStatement stmt = con.prepareStatement(selectSql)) {
+
+                    stmt.setInt(1, billNo);
+
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new SQLException("Pedido não encontrado.");
+                        }
+
+                        itemId = rs.getString("item_id");
+                        quantity = rs.getInt("quantity");
+                        status = rs.getString("status");
+                    }
+                }
+
+                if (!"PENDING".equals(status)) {
+                    con.rollback();
+                    JOptionPane.showMessageDialog(
+                            this, "Este pedido já foi processado.");
+                    return;
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updateInventorySql)) {
+
+                    stmt.setInt(1, quantity);
+                    stmt.setString(2, itemId);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "Produto não encontrado no estoque.");
+                    }
+                }
+
+                try (PreparedStatement stmt = con.prepareStatement(updatePurchaseSql)) {
+
+                    stmt.setInt(1, quantity);
+                    stmt.setInt(2, billNo);
+
+                    if (stmt.executeUpdate() != 1) {
+                        throw new SQLException(
+                                "Não foi possível atualizar o pedido.");
+                    }
+                }
+
+                con.commit();
+
                 JOptionPane.showMessageDialog(
-                        this, "A quantidade deve ser maior que zero.");
-                return;
-            }
+                        this, "Pedido aprovado e estoque atualizado!");
 
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(
-                    this, "Quantidade inválida.");
-            return;
-        }
-
-        String query = "UPDATE inventory SET quantity = quantity + ? WHERE item_id = ?";
-
-        try (
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement stmt = con.prepareStatement(query)) {
-            stmt.setInt(1, quantity);
-            stmt.setString(2, itemId);
-
-            int updated = stmt.executeUpdate();
-
-            if (updated == 1) {
-                JOptionPane.showMessageDialog(
-                        this, "Solicitação aprovada. Estoque atualizado.");
-            } else {
-                JOptionPane.showMessageDialog(
-                        this, "Produto não encontrado no estoque.");
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
             }
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro ao atualizar estoque: " + e.getMessage());
+                    this, "Erro ao processar pedido: " + e.getMessage());
         }
     }
 

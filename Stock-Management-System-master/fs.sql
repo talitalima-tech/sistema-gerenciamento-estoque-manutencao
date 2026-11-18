@@ -15,9 +15,13 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
 
+
 --
 -- Database: `fs`
 --
+
+CREATE DATABASE IF NOT EXISTS `fs`;
+USE `fs`;
 
 -- --------------------------------------------------------
 
@@ -33,8 +37,9 @@ CREATE TABLE IF NOT EXISTS `bill` (
   `totprice` float NOT NULL,
   `biilno` int(30) NOT NULL AUTO_INCREMENT,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `returned_quantity` int NOT NULL DEFAULT 0,
   PRIMARY KEY (`biilno`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=54 ;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=54;
 
 --
 -- Dumping data for table `bill`
@@ -89,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   `exp` varchar(30) NOT NULL,
   `batchno` varchar(30) NOT NULL,
   PRIMARY KEY (`item_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `inventory`
@@ -115,16 +120,21 @@ INSERT INTO `inventory` (`item_id`, `item_name`, `quantity`, `price`, `mfd`, `ex
 -- Table structure for table `purchase`
 --
 
+
 CREATE TABLE IF NOT EXISTS `purchase` (
-  `biilno` int(10) NOT NULL AUTO_INCREMENT,
-  `item_id` varchar(30) NOT NULL,
-  `item_name` varchar(20) NOT NULL,
-  `quantity` int(20) NOT NULL,
-  `price` double NOT NULL,
-  `totprice` double NOT NULL,
-  `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`biilno`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=11 ;
+    `biilno` int(10) NOT NULL AUTO_INCREMENT,
+    `item_id` varchar(30) NOT NULL,
+    `item_name` varchar(20) NOT NULL,
+    `quantity` int(20) NOT NULL,
+    `price` double NOT NULL,
+    `totprice` double NOT NULL,
+    `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status` varchar(20) NOT NULL DEFAULT 'PENDING',
+    `received_quantity` int NOT NULL DEFAULT 0,
+    `returned_quantity` int NOT NULL DEFAULT 0,
+    PRIMARY KEY (`biilno`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=11;
+
 
 --
 -- Dumping data for table `purchase`
