@@ -452,7 +452,7 @@ public class returnproduct extends javax.swing.JFrame {
         int selectedRow = table.getSelectedRow();
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto.");
+            JOptionPane.showMessageDialog(this, "Please select a product.");
             return;
         }
 
@@ -467,12 +467,12 @@ public class returnproduct extends javax.swing.JFrame {
 
             if (billNo <= 0 || returnQuantity <= 0) {
                 JOptionPane.showMessageDialog(
-                        this, "Informe uma nota e uma quantidade válidas.");
+                        this, "Enter a valid invoice number and quantity.");
                 return;
             }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
-                    this, "Informe uma nota e uma quantidade numéricas.");
+                    this, "Enter a numeric invoice number and quantity.");
             return;
         }
 
@@ -500,7 +500,7 @@ public class returnproduct extends javax.swing.JFrame {
                         if (!rs.next()) {
                             con.rollback();
                             JOptionPane.showMessageDialog(
-                                    this, "Venda não encontrada.");
+                                    this, "Sale not found.");
                             return;
                         }
 
@@ -515,7 +515,7 @@ public class returnproduct extends javax.swing.JFrame {
                     con.rollback();
                     JOptionPane.showMessageDialog(
                             this,
-                            "Quantidade disponível para devolução: " + available);
+                            "Quantity available for return: " + available);
                     return;
                 }
 
@@ -542,7 +542,7 @@ public class returnproduct extends javax.swing.JFrame {
                 con.commit();
 
                 JOptionPane.showMessageDialog(
-                        this, "Produto devolvido com sucesso.");
+                        this, "Product returned successfully.");
 
                 model.setRowCount(0);
                 jTextField1.setText("");
@@ -554,12 +554,12 @@ public class returnproduct extends javax.swing.JFrame {
             } catch (SQLException e) {
                 con.rollback();
                 JOptionPane.showMessageDialog(
-                        this, "Erro ao devolver produto: " + e.getMessage());
+                        this, "Error returning product: " + e.getMessage());
             }
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro de conexão: " + e.getMessage());
+                    this, "Connection error: " + e.getMessage());
         }
     }
 

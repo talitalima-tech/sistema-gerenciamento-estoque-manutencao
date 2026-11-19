@@ -200,13 +200,13 @@ public class supplierapprove extends javax.swing.JFrame {
             jLabel2.setText(Integer.toString(sum));
 
         } catch (NumberFormatException | ArithmeticException e) {
-            jLabel2.setText("Erro");
+            jLabel2.setText("Error");
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Não foi possível calcular o total das compras. "
-                            + "Verifique os valores dos produtos.",
-                    "Erro no cálculo",
+                    "Unable to calculate the total purchase amount. "
+                            + "Check the product values.",
+                    "Calculation Error",
                     JOptionPane.ERROR_MESSAGE);
 
             return;
@@ -233,7 +233,7 @@ public class supplierapprove extends javax.swing.JFrame {
         int selectedRow = table2.getSelectedRow();
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um pedido.");
+            JOptionPane.showMessageDialog(this, "Please select an order.");
             return;
         }
 
@@ -276,7 +276,7 @@ public class supplierapprove extends javax.swing.JFrame {
                 if (!"PENDING".equals(status)) {
                     con.rollback();
                     JOptionPane.showMessageDialog(
-                            this, "Este pedido já foi processado.");
+                            this, "This order has already been processed.");
                     return;
                 }
 
@@ -305,7 +305,7 @@ public class supplierapprove extends javax.swing.JFrame {
                 con.commit();
 
                 JOptionPane.showMessageDialog(
-                        this, "Pedido aprovado e estoque atualizado!");
+                        this, "Order approved and inventory updated!");
 
             } catch (SQLException e) {
                 con.rollback();
@@ -314,7 +314,7 @@ public class supplierapprove extends javax.swing.JFrame {
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro ao processar pedido: " + e.getMessage());
+                    this, "Error processing order: " + e.getMessage());
         }
     }
 

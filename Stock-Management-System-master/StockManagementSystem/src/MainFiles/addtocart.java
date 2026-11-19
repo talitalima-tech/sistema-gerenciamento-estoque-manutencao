@@ -212,7 +212,7 @@ public class addtocart extends javax.swing.JFrame {
         int selectedRowIndex = table2.getSelectedRow();
 
         if (selectedRowIndex == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um produto.");
+            JOptionPane.showMessageDialog(this, "Please select a product.");
             return;
         }
 
@@ -225,7 +225,7 @@ public class addtocart extends javax.swing.JFrame {
             String totalPrice = model.getValueAt(selectedRowIndex, 4).toString();
 
             if (quantity <= 0) {
-                JOptionPane.showMessageDialog(this, "Quantidade inválida.");
+                JOptionPane.showMessageDialog(this, "Invalid quantity.");
                 return;
             }
 
@@ -322,7 +322,7 @@ public class addtocart extends javax.swing.JFrame {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Produto faturado com sucesso!");
+                    "Product billed successfully!");
 
             this.setVisible(false);
 
@@ -332,15 +332,15 @@ public class addtocart extends javax.swing.JFrame {
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Quantidade inválida. Informe um número inteiro válido.",
-                    "Erro de validação",
+                    "Invalid quantity. Enter a valid integer.",
+                    "Validation Error",
                     JOptionPane.WARNING_MESSAGE);
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Erro ao faturar produto: " + e.getMessage(),
-                    "Erro no faturamento",
+                    "Error billing product: " + e.getMessage(),
+                    "Billing Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

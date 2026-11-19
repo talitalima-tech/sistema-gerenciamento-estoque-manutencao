@@ -284,7 +284,7 @@ public class addproduct extends javax.swing.JFrame {
 
                         JOptionPane.showMessageDialog(
                                         this,
-                                        "Preencha os campos de identificação, nome, quantidade e preço.");
+                                        "Fill in the ID, name, quantity, and price fields.");
                         return;
                 }
 
@@ -299,21 +299,21 @@ public class addproduct extends javax.swing.JFrame {
                         if (quantity < 0) {
                                 JOptionPane.showMessageDialog(
                                                 this,
-                                                "A quantidade não pode ser negativa.");
+                                                "Quantity cannot be negative.");
                                 return;
                         }
 
                         if (price < 0) {
                                 JOptionPane.showMessageDialog(
                                                 this,
-                                                "O preço não pode ser negativo.");
+                                                "Price cannot be negative.");
                                 return;
                         }
 
                 } catch (NumberFormatException e) {
                         JOptionPane.showMessageDialog(
                                         this,
-                                        "Quantidade e preço devem ser números inteiros válidos.");
+                                        "Quantity and price must be valid integers.");
                         return;
                 }
 
@@ -338,17 +338,17 @@ public class addproduct extends javax.swing.JFrame {
                         if (success == 1) {
                                 JOptionPane.showMessageDialog(
                                                 this,
-                                                "Produto cadastrado com sucesso.");
+                                                "Product added successfully.");
                         } else {
                                 JOptionPane.showMessageDialog(
                                                 this,
-                                                "Não foi possível cadastrar o produto.");
+                                                "Unable to add the product.");
                         }
 
                 } catch (SQLException e) {
                         JOptionPane.showMessageDialog(
                                         this,
-                                        "Erro ao cadastrar produto: " + e.getMessage());
+                                        "Error adding product: " + e.getMessage());
                 }
 
         }// GEN-LAST:event_jButton1MouseClicked

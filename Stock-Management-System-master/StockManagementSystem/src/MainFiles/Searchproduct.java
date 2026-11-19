@@ -539,7 +539,7 @@ public class Searchproduct extends javax.swing.JFrame {
                 String priceText = jTextField4.getText().trim();
 
                 if (item_id.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Selecione um produto.");
+                        JOptionPane.showMessageDialog(this, "Please select a product.");
                         return;
                 }
 
@@ -552,18 +552,18 @@ public class Searchproduct extends javax.swing.JFrame {
 
                         if (quantity <= 0) {
                                 JOptionPane.showMessageDialog(
-                                                this, "A quantidade deve ser maior que zero.");
+                                                this, "Quantity must be greater than zero.");
                                 return;
                         }
 
                         if (price < 0) {
-                                JOptionPane.showMessageDialog(this, "Preço inválido.");
+                                JOptionPane.showMessageDialog(this, "Invalid price.");
                                 return;
                         }
 
                 } catch (NumberFormatException e) {
                         JOptionPane.showMessageDialog(
-                                        this, "Informe uma quantidade e um preço válidos.");
+                                        this, "Enter a valid quantity and price.");
                         return;
                 }
 
@@ -587,7 +587,7 @@ public class Searchproduct extends javax.swing.JFrame {
                                 try (ResultSet rs = stmt.executeQuery()) {
                                         if (!rs.next()) {
                                                 JOptionPane.showMessageDialog(
-                                                                this, "Produto não encontrado no estoque.");
+                                                                this, "Product not found in inventory.");
                                                 return;
                                         }
 
@@ -606,7 +606,7 @@ public class Searchproduct extends javax.swing.JFrame {
 
                         if (cartQuantity < 0 || stockQuantity < 0) {
                                 JOptionPane.showMessageDialog(
-                                                this, "Foram encontrados dados inválidos de estoque ou carrinho.");
+                                                this, "Invalid inventory or cart data found.");
                                 return;
                         }
 
@@ -615,10 +615,10 @@ public class Searchproduct extends javax.swing.JFrame {
 
                                 JOptionPane.showMessageDialog(
                                                 this,
-                                                "Estoque insuficiente.\n"
-                                                                + "Disponível: " + stockQuantity + "\n"
-                                                                + "Já no carrinho: " + cartQuantity + "\n"
-                                                                + "Pode adicionar: "
+                                                "Insufficient stock.\n"
+                                                                + "Available: " + stockQuantity + "\n"
+                                                                + "Already in cart: " + cartQuantity + "\n"
+                                                                + "Can add: "
                                                                 + Math.max(0, stockQuantity - cartQuantity));
                                 return;
                         }
@@ -629,7 +629,7 @@ public class Searchproduct extends javax.swing.JFrame {
                                 totalPrice = Math.multiplyExact(quantity, price);
                         } catch (ArithmeticException e) {
                                 JOptionPane.showMessageDialog(
-                                                this, "O valor total ultrapassa o limite permitido.");
+                                                this, "The total amount exceeds the allowed limit.");
                                 return;
                         }
 
@@ -644,16 +644,16 @@ public class Searchproduct extends javax.swing.JFrame {
 
                                 if (success == 1) {
                                         JOptionPane.showMessageDialog(
-                                                        this, "Produto adicionado ao carrinho com sucesso.");
+                                                        this, "Product added to cart successfully.");
                                 } else {
                                         JOptionPane.showMessageDialog(
-                                                        this, "Não foi possível adicionar o produto.");
+                                                        this, "Unable to add the product.");
                                 }
                         }
 
                 } catch (SQLException e) {
                         JOptionPane.showMessageDialog(
-                                        this, "Erro ao adicionar produto: " + e.getMessage());
+                                        this, "Error adding product: " + e.getMessage());
                 }
 
         }// GEN-LAST:event_jButton3ActionPerformed

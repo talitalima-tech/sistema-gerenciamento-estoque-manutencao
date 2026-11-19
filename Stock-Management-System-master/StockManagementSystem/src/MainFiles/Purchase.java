@@ -518,7 +518,7 @@ public class Purchase extends javax.swing.JFrame {
 
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(
-                    this, "Selecione um produto na tabela.");
+                    this, "Please select a product from the table.");
             return;
         }
 
@@ -532,13 +532,13 @@ public class Purchase extends javax.swing.JFrame {
 
             if (returnQuantity <= 0) {
                 JOptionPane.showMessageDialog(
-                        this, "A quantidade deve ser maior que zero.");
+                        this, "Quantity must be greater than zero.");
                 return;
             }
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(
-                    this, "Informe uma quantidade válida.");
+                    this, "Enter a valid quantity.");
             return;
         }
 
@@ -553,7 +553,7 @@ public class Purchase extends javax.swing.JFrame {
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro ao consultar pedidos: " + e.getMessage());
+                    this, "Error retrieving orders: " + e.getMessage());
             return;
         }
 
@@ -635,7 +635,7 @@ public class Purchase extends javax.swing.JFrame {
                 con.commit();
 
                 JOptionPane.showMessageDialog(
-                        this, "Devolução registrada com sucesso!");
+                        this, "Return recorded successfully!");
 
             } catch (SQLException e) {
                 con.rollback();
@@ -644,7 +644,7 @@ public class Purchase extends javax.swing.JFrame {
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(
-                    this, "Erro na devolução: " + e.getMessage());
+                    this, "Return error: " + e.getMessage());
         }
     }
 
@@ -695,7 +695,7 @@ public class Purchase extends javax.swing.JFrame {
 
         if (model.getRowCount() == 0) {
             JOptionPane.showMessageDialog(
-                    this, "Nenhum pedido recebido disponível para devolução.");
+                    this, "No received orders available for return.");
             return null;
         }
 
@@ -708,7 +708,7 @@ public class Purchase extends javax.swing.JFrame {
         int option = JOptionPane.showConfirmDialog(
                 this,
                 new javax.swing.JScrollPane(pedidosTable),
-                "Selecione o pedido para devolução",
+                "Select an order to return",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
 

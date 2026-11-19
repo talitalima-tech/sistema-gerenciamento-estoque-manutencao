@@ -245,13 +245,13 @@ public class bill extends javax.swing.JFrame {
             jLabel6.setText(Integer.toString(sum));
 
         } catch (NumberFormatException | ArithmeticException e) {
-            jLabel6.setText("Erro");
+            jLabel6.setText("Error");
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Não foi possível calcular o total da fatura. "
-                            + "Verifique os valores dos produtos.",
-                    "Erro no cálculo",
+                    "Unable to calculate the invoice total. "
+                            + "Check the product values.",
+                    "Calculation Error",
                     JOptionPane.ERROR_MESSAGE);
 
             return;
@@ -260,10 +260,23 @@ public class bill extends javax.swing.JFrame {
         MessageFormat header = new MessageFormat("Invoice Print");
         MessageFormat footer = new MessageFormat("Page");
         try {
-            jTable1.print(JTable.PrintMode.FIT_WIDTH, header, footer);
+            jTable1.print(
+                    JTable.PrintMode.FIT_WIDTH,
+                    header,
+                    footer,
+                    false,
+                    null,
+                    false,
+                    null);
 
         } catch (PrinterException ex) {
             Logger.getLogger(bill.class.getName()).log(Level.SEVERE, null, ex);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Print service not found. Please check your printer configuration.",
+                    "Printing Error",
+                    JOptionPane.INFORMATION_MESSAGE);
         }
 
     }// GEN-LAST:event_jButton1ActionPerformed
