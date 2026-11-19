@@ -60,8 +60,11 @@ Pronto! O sistema utilizará automaticamente as credenciais configuradas nas var
 
 Quando estiver usando o sistema!
 
-Perfil	    Login	             Senha
-Retailer	  admin	             123
-Supplier	  supplier	         123
+Após iniciar a aplicação, utilize uma das contas de demonstração:
+
+| Perfil | Login | Senha |
+|---|---|---|
+| Retailer | `admin` | `123` |
+| Supplier | `supplier` | `123` |
 
 
