@@ -17,6 +17,8 @@ import java.sql.SQLException;
  * @author pratap
  */
 public class addproduct extends javax.swing.JFrame {
+        private javax.swing.JLabel categoryLabel;
+        private javax.swing.JTextField categoryField;
 
         /**
          * Creates new form addBook
@@ -52,6 +54,8 @@ public class addproduct extends javax.swing.JFrame {
                 TextBox6 = new javax.swing.JTextField();
                 TextBox7 = new javax.swing.JTextField();
                 jLabel10 = new javax.swing.JLabel();
+                categoryLabel = new javax.swing.JLabel();
+                categoryField = new javax.swing.JTextField();
 
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -113,6 +117,10 @@ public class addproduct extends javax.swing.JFrame {
 
                 jLabel10.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
                 jLabel10.setText("Batchno:");
+                categoryLabel.setFont(new java.awt.Font("Times New Roman", 1, 24));
+                categoryLabel.setText("Category:");
+
+                categoryField.setFont(new java.awt.Font("Times New Roman", 1, 24));
 
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
                 getContentPane().setLayout(layout);
@@ -145,6 +153,7 @@ public class addproduct extends javax.swing.JFrame {
                                                                                                                                                                 javax.swing.GroupLayout.Alignment.LEADING)
                                                                                                                                                                 .addComponent(jLabel9)
                                                                                                                                                                 .addComponent(jLabel10)
+                                                                                                                                                                .addComponent(categoryLabel)
                                                                                                                                                                 .addComponent(jLabel4)
                                                                                                                                                                 .addComponent(jLabel5)
                                                                                                                                                                 .addComponent(jLabel6)
@@ -173,6 +182,14 @@ public class addproduct extends javax.swing.JFrame {
                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                                                                 173,
                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                                                                                .addComponent(TextBox7,
+                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                                                                173,
+                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                                                                .addComponent(categoryField,
+                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                                                                173,
+                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                                                                                 .addComponent(TextBox7,
                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                                                 173,
@@ -258,6 +275,14 @@ public class addproduct extends javax.swing.JFrame {
                                                                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(jLabel10))
+                                                                .addGap(29, 29, 29)
+                                                                .addGroup(layout.createParallelGroup(
+                                                                                javax.swing.GroupLayout.Alignment.BASELINE)
+                                                                                .addComponent(categoryLabel)
+                                                                                .addComponent(categoryField,
+                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
                                                                 .addGap(48, 48, 48)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 javax.swing.GroupLayout.Alignment.BASELINE)
@@ -277,14 +302,23 @@ public class addproduct extends javax.swing.JFrame {
                 String mfd = TextBox5.getText().trim();
                 String exp = TextBox6.getText().trim();
                 String batchno = TextBox7.getText().trim();
+                String category = categoryField.getText().trim();
 
                 // Verifica os campos obrigatórios
                 if (item_id.isEmpty() || item_name.isEmpty()
-                                || quantityText.isEmpty() || priceText.isEmpty()) {
+                                || quantityText.isEmpty() || priceText.isEmpty()
+                                || category.isEmpty()) {
 
                         JOptionPane.showMessageDialog(
                                         this,
-                                        "Fill in the ID, name, quantity, and price fields.");
+                                        "Fill in the ID, name, quantity, price, and category fields.");
+                        return;
+                }
+
+                if (category.length() > 50) {
+                        JOptionPane.showMessageDialog(
+                                        this,
+                                        "Category cannot exceed 50 characters.");
                         return;
                 }
 
@@ -318,8 +352,8 @@ public class addproduct extends javax.swing.JFrame {
                 }
 
                 String query = "INSERT INTO inventory "
-                                + "(item_id, item_name, quantity, price, mfd, exp, batchno) "
-                                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                                + "(item_id, item_name, quantity, price, mfd, exp, batchno, category) "
+                                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
                 try (
                                 Connection con = DatabaseConnection.getConnection();
@@ -332,6 +366,7 @@ public class addproduct extends javax.swing.JFrame {
                         stmt.setString(5, mfd);
                         stmt.setString(6, exp);
                         stmt.setString(7, batchno);
+                        stmt.setString(8, category);
 
                         int success = stmt.executeUpdate();
 

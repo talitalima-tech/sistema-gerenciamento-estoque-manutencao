@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   `mfd` varchar(30) NOT NULL,
   `exp` varchar(30) NOT NULL,
   `batchno` varchar(30) NOT NULL,
+  `category` varchar(50) NOT NULL DEFAULT 'Uncategorized',
   PRIMARY KEY (`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

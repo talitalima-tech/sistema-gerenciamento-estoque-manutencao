@@ -19,6 +19,7 @@ import java.sql.PreparedStatement;
  * @author pratap
  */
 public class Searchproduct extends javax.swing.JFrame {
+        private javax.swing.JComboBox<String> searchType;
 
         /**
          * Creates new form SearchBook
@@ -39,6 +40,8 @@ public class Searchproduct extends javax.swing.JFrame {
 
                 jLabel2 = new javax.swing.JLabel();
                 bid = new javax.swing.JTextField();
+                searchType = new javax.swing.JComboBox<>(
+                                new String[] { "ID", "Name", "Category", "Batch" });
                 jScrollPane1 = new javax.swing.JScrollPane();
                 table = new javax.swing.JTable();
                 jButton1 = new javax.swing.JButton();
@@ -63,7 +66,8 @@ public class Searchproduct extends javax.swing.JFrame {
                 setForeground(new java.awt.Color(0, 255, 0));
 
                 jLabel2.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
-                jLabel2.setText("Search Product");
+                jLabel2.setText("Search by:");
+                searchType.setFont(new java.awt.Font("Times New Roman", 1, 20));
 
                 bid.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
 
@@ -73,10 +77,12 @@ public class Searchproduct extends javax.swing.JFrame {
 
                                 },
                                 new String[] {
-                                                "item_id", "item_name", "quntatity", "price", "mfd", "exp", "batchno"
+                                                "item_id", "item_name", "quantity", "price", "mfd", "exp", "batchno",
+                                                "category"
                                 }) {
                         boolean[] canEdit = new boolean[] {
-                                        false, false, false, false, false, false, false
+                                        false, false, false, false,
+                                        false, false, false, false
                         };
 
                         public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -101,7 +107,7 @@ public class Searchproduct extends javax.swing.JFrame {
 
                 jButton1.setFont(jButton1.getFont().deriveFont(jButton1.getFont().getStyle() | java.awt.Font.BOLD,
                                 jButton1.getFont().getSize() + 11));
-                jButton1.setIcon(new javax.swing.ImageIcon("C:\\Users\\PRATAP KUMAR\\OneDrive\\Desktop\\four.png")); // NOI18N
+                jButton1.setText("Search");
                 jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
                 jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
                         public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -287,7 +293,12 @@ public class Searchproduct extends javax.swing.JFrame {
                                                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                                                                                                 195,
                                                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                                                                                                                                                .addGap(35, 35, 35)
+                                                                                                                                                                                .addGap(10, 10, 10)
+                                                                                                                                                                                .addComponent(searchType,
+                                                                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                                                                                                                130,
+                                                                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                                                                                                                .addGap(10, 10, 10)
                                                                                                                                                                                 .addComponent(bid,
                                                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                                                                                                 149,
@@ -296,7 +307,7 @@ public class Searchproduct extends javax.swing.JFrame {
                                                                                                                                                                                                 javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                                                                                                                                                 .addComponent(jButton1,
                                                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                                                                                                                                                29,
+                                                                                                                                                                                                110,
                                                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                                                                                                                                 .addGap(0, 195, Short.MAX_VALUE))))
                                                                                                                 .addGroup(layout.createSequentialGroup()
@@ -353,6 +364,10 @@ public class Searchproduct extends javax.swing.JFrame {
                                                                                                                                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                                                                                                                                 javax.swing.GroupLayout.DEFAULT_SIZE,
                                                                                                                                                                 Short.MAX_VALUE)
+                                                                                                                                                .addComponent(searchType,
+                                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                                                                                                                                37,
+                                                                                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                                                                                                 .addComponent(bid,
                                                                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                                                                 37,
@@ -416,41 +431,9 @@ public class Searchproduct extends javax.swing.JFrame {
                 pack();
         }// </editor-fold>//GEN-END:initComponents
 
-        private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jButton1MouseClicked
-
-                String itemId = bid.getText().trim();
-                DefaultTableModel model = (DefaultTableModel) table.getModel();
-
-                String query = "SELECT * FROM inventory WHERE item_id = ?";
-
-                try (
-                                Connection con = DatabaseConnection.getConnection();
-                                PreparedStatement stmt = con.prepareStatement(query)) {
-                        stmt.setString(1, itemId);
-
-                        try (ResultSet rs = stmt.executeQuery()) {
-                                model.setRowCount(0);
-
-                                while (rs.next()) {
-                                        String id = rs.getString("item_id");
-                                        String name = rs.getString("item_name");
-                                        String quantity = rs.getString("quantity");
-                                        String price = rs.getString("price");
-                                        String mfd = rs.getString("mfd");
-                                        String exp = rs.getString("exp");
-                                        String batchno = rs.getString("batchno");
-
-                                        model.addRow(new Object[] {
-                                                        id, name, quantity, price, mfd, exp, batchno
-                                        });
-                                }
-                        }
-
-                } catch (SQLException e) {
-                        JOptionPane.showMessageDialog(this, e.getMessage());
-                }
-
-        }// GEN-LAST:event_jButton1MouseClicked
+        private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {
+                // Search is handled by jButton1ActionPerformed.
+        }
 
         private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jButton2MouseClicked
                 this.setVisible(false);
@@ -458,15 +441,92 @@ public class Searchproduct extends javax.swing.JFrame {
                 mm.setVisible(true);
         }// GEN-LAST:event_jButton2MouseClicked
 
-        private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
+        private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+
+                String searchText = bid.getText().trim();
+                String type = (String) searchType.getSelectedItem();
+
+                DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+                model.setRowCount(0);
+
                 jTextField1.setText("");
                 jTextField2.setText("");
                 jTextField3.setText("");
                 jTextField4.setText("");
                 jTextField5.setText("");
 
-                // TODO add your handling code here:
-        }// GEN-LAST:event_jButton1ActionPerformed
+                if (searchText.isEmpty()) {
+                        JOptionPane.showMessageDialog(
+                                        this, "Enter a search value.");
+                        return;
+                }
+
+                String query;
+                String parameter = searchText;
+
+                switch (type) {
+
+                        case "ID":
+                                query = "SELECT * FROM inventory WHERE item_id = ?";
+                                break;
+
+                        case "Name":
+                                query = "SELECT * FROM inventory WHERE item_name LIKE ?";
+                                parameter = "%" + searchText + "%";
+                                break;
+
+                        case "Category":
+                                query = "SELECT * FROM inventory WHERE category LIKE ?";
+                                parameter = "%" + searchText + "%";
+                                break;
+
+                        case "Batch":
+                                query = "SELECT * FROM inventory WHERE batchno = ?";
+                                break;
+
+                        default:
+                                JOptionPane.showMessageDialog(
+                                                this, "Invalid search type.");
+                                return;
+                }
+
+                try (
+                                Connection con = DatabaseConnection.getConnection();
+                                PreparedStatement stmt = con.prepareStatement(query)) {
+
+                        stmt.setString(1, parameter);
+
+                        try (ResultSet rs = stmt.executeQuery()) {
+
+                                while (rs.next()) {
+
+                                        model.addRow(new Object[] {
+                                                        rs.getString("item_id"),
+                                                        rs.getString("item_name"),
+                                                        rs.getString("quantity"),
+                                                        rs.getString("price"),
+                                                        rs.getString("mfd"),
+                                                        rs.getString("exp"),
+                                                        rs.getString("batchno"),
+                                                        rs.getString("category")
+                                        });
+                                }
+                        }
+
+                        if (model.getRowCount() == 0) {
+                                JOptionPane.showMessageDialog(
+                                                this, "No products found.");
+                        }
+
+                } catch (SQLException e) {
+
+                        model.setRowCount(0);
+
+                        JOptionPane.showMessageDialog(
+                                        this, "Error searching products: " + e.getMessage());
+                }
+        }
 
         private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jTextField1ActionPerformed
                 // TODO add your handling code here:
@@ -475,6 +535,9 @@ public class Searchproduct extends javax.swing.JFrame {
         private void tableMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_tableMouseClicked
                 DefaultTableModel model = (DefaultTableModel) table.getModel();
                 int selectedRowIndex = table.getSelectedRow();
+                if (selectedRowIndex < 0) {
+                        return;
+                }
                 jTextField1.setText(model.getValueAt(selectedRowIndex, 0).toString());
                 jTextField2.setText(model.getValueAt(selectedRowIndex, 1).toString());
                 // String s=model.getValueAt(selectedRowIndex,2).toString();

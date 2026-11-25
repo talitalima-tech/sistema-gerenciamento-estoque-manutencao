@@ -57,10 +57,11 @@ public class Inventory extends javax.swing.JFrame {
 
                 },
                 new String[] {
-                        "Item_Id", "item_name", "quantity", "price", "mfd", "exp", "batchno"
+                        "Item_Id", "item_name", "quantity", "price", "mfd", "exp", "batchno", "category"
                 }) {
             boolean[] canEdit = new boolean[] {
-                    false, false, false, false, false, false, false
+                    false, false, false, false,
+                    false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -78,6 +79,7 @@ public class Inventory extends javax.swing.JFrame {
             table.getColumnModel().getColumn(4).setMaxWidth(300);
             table.getColumnModel().getColumn(5).setMaxWidth(300);
             table.getColumnModel().getColumn(6).setMaxWidth(300);
+            table.getColumnModel().getColumn(7).setMaxWidth(300);
         }
 
         jButton1.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
@@ -191,9 +193,10 @@ public class Inventory extends javax.swing.JFrame {
                 String mfd = rs.getString("mfd");
                 String exp = rs.getString("exp");
                 String batchno = rs.getString("batchno");
+                String category = rs.getString("category");
 
                 model.addRow(new Object[] {
-                        id, name, qun, price, mfd, exp, batchno
+                        id, name, qun, price, mfd, exp, batchno, category
                 });
             }
 
