@@ -12,18 +12,46 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import java.sql.PreparedStatement;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import java.awt.FlowLayout;
 
 /**
  *
  * @author pratap
  */
 public class Inventory extends javax.swing.JFrame {
+    private JComboBox<String> filterType;
+    private JTextField filterValue;
+    private JButton exportButton;
+    private JPanel filterPanel;
 
     /**
      * Creates new form SearchBook
      */
     public Inventory() {
         initComponents();
+
+        filterType.addActionListener(e -> {
+            boolean all = "All".equals(filterType.getSelectedItem());
+
+            filterValue.setEnabled(!all);
+
+            if (all) {
+                filterValue.setText("");
+            }
+        });
+
+        filterValue.setEnabled(false);
+
+        filterValue.addActionListener(e -> loadInventory());
+
+        exportButton.addActionListener(e -> ExportUtils.exportToExcel(
+                table, "Inventory", "inventory_report", this));
     }
 
     /**
@@ -42,6 +70,19 @@ public class Inventory extends javax.swing.JFrame {
         table = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        filterType = new JComboBox<>(
+                new String[] { "All", "ID", "Name", "Category", "Batch" });
+
+        filterValue = new JTextField(15);
+
+        exportButton = new JButton("Export to Excel");
+
+        filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
+        filterPanel.add(new JLabel("Filter by:"));
+        filterPanel.add(filterType);
+        filterPanel.add(filterValue);
+        filterPanel.add(exportButton);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -126,6 +167,7 @@ public class Inventory extends javax.swing.JFrame {
                                                 .addGroup(layout
                                                         .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING,
                                                                 false)
+                                                        .addComponent(filterPanel)
                                                         .addComponent(jScrollPane1,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE, 1016,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -152,7 +194,12 @@ public class Inventory extends javax.swing.JFrame {
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGap(33, 33, 33)
                                                 .addComponent(jButton1)
-                                                .addGap(32, 32, 32)
+                                                .addGap(10, 10, 10)
+                                                .addComponent(filterPanel,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE,
+                                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(10, 10, 10)
                                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 355,
                                                         javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -172,43 +219,102 @@ public class Inventory extends javax.swing.JFrame {
         mm.setVisible(true);
     }// GEN-LAST:event_jButton2MouseClicked
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jButton1MouseClicked
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {
+        // Search is handled by the action listener.
+    }
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        loadInventory();
+    }
+
+    private void loadInventory() {
 
         DefaultTableModel model = (DefaultTableModel) table.getModel();
 
+        model.setRowCount(0);
+
+        String type = (String) filterType.getSelectedItem();
+        String value = filterValue.getText().trim();
+
         String query = "SELECT * FROM inventory";
+        String parameter = null;
+
+        if (!"All".equals(type) && value.isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this, "Enter a search value.");
+
+            return;
+        }
+
+        switch (type) {
+
+            case "ID":
+                query += " WHERE item_id = ?";
+                parameter = value;
+                break;
+
+            case "Name":
+                query += " WHERE item_name LIKE ?";
+                parameter = "%" + value + "%";
+                break;
+
+            case "Category":
+                query += " WHERE category LIKE ?";
+                parameter = "%" + value + "%";
+                break;
+
+            case "Batch":
+                query += " WHERE batchno = ?";
+                parameter = value;
+                break;
+
+            default:
+                break;
+        }
 
         try (
                 Connection con = DatabaseConnection.getConnection();
-                Statement stmt = con.createStatement();
-                ResultSet rs = stmt.executeQuery(query)) {
-            // Limpa a tabela antes de carregar os produtos
-            model.setRowCount(0);
+                PreparedStatement stmt = con.prepareStatement(query)) {
 
-            while (rs.next()) {
-                String id = rs.getString("item_id");
-                String name = rs.getString("item_name");
-                String qun = rs.getString("quantity");
-                String price = rs.getString("price");
-                String mfd = rs.getString("mfd");
-                String exp = rs.getString("exp");
-                String batchno = rs.getString("batchno");
-                String category = rs.getString("category");
+            if (parameter != null) {
+                stmt.setString(1, parameter);
+            }
 
-                model.addRow(new Object[] {
-                        id, name, qun, price, mfd, exp, batchno, category
-                });
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    model.addRow(new Object[] {
+                            rs.getString("item_id"),
+                            rs.getString("item_name"),
+                            rs.getInt("quantity"),
+                            rs.getDouble("price"),
+                            rs.getString("mfd"),
+                            rs.getString("exp"),
+                            rs.getString("batchno"),
+                            rs.getString("category")
+                    });
+                }
+            }
+
+            if (model.getRowCount() == 0) {
+
+                JOptionPane.showMessageDialog(
+                        this, "No products found.");
             }
 
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
+
+            model.setRowCount(0);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error loading inventory: " + e.getMessage(),
+                    "Database error",
+                    JOptionPane.ERROR_MESSAGE);
         }
-
-    }// GEN-LAST:event_jButton1MouseClicked
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }// GEN-LAST:event_jButton1ActionPerformed
+    }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:

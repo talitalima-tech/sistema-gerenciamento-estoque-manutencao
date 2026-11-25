@@ -13,18 +13,36 @@ import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import javax.swing.JButton;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import java.awt.FlowLayout;
 
 /**
  *
  * @author pratap
  */
 public class Track extends javax.swing.JFrame {
+    private JTextField endDate;
+    private JTextField productFilter;
+    private JButton exportButton;
+    private JPanel filterPanel;
 
     /**
      * Creates new form SearchBook
      */
     public Track() {
         initComponents();
+
+        exportButton.addActionListener(e -> ExportUtils.exportToExcel(
+                table, "Sales", "sales_report", this));
+
+        bid.addActionListener(e -> loadSales());
+        endDate.addActionListener(e -> loadSales());
+        productFilter.addActionListener(e -> loadSales());
     }
 
     /**
@@ -43,11 +61,29 @@ public class Track extends javax.swing.JFrame {
         table = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        endDate = new JTextField(10);
+        productFilter = new JTextField(12);
+        exportButton = new JButton("Export to Excel");
+
+        filterPanel = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 10, 5));
+
+        filterPanel.add(new JLabel("End date:"));
+        filterPanel.add(endDate);
+
+        filterPanel.add(new JLabel("Product name:"));
+        filterPanel.add(productFilter);
+
+        filterPanel.add(exportButton);
+
+        bid.setToolTipText("YYYY-MM-DD");
+        endDate.setToolTipText("YYYY-MM-DD");
+        productFilter.setToolTipText("Optional product name");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
-        jLabel2.setText("Search Date");
+        jLabel2.setText("Start date");
 
         bid.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
 
@@ -57,10 +93,10 @@ public class Track extends javax.swing.JFrame {
 
                 },
                 new String[] {
-                        "billno", "item_id", "item_name", "quntatity", "price", "date"
+                        "billno", "item_id", "item_name", "quantity", "price", "total_price", "date"
                 }) {
             boolean[] canEdit = new boolean[] {
-                    false, false, false, false, false, false
+                    false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -76,7 +112,7 @@ public class Track extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(table);
         if (table.getColumnModel().getColumnCount() > 0) {
-            table.getColumnModel().getColumn(5).setMinWidth(150);
+            table.getColumnModel().getColumn(6).setMinWidth(150);
         }
 
         jButton1.setFont(jButton1.getFont().deriveFont(jButton1.getFont().getStyle() | java.awt.Font.BOLD,
@@ -116,6 +152,7 @@ public class Track extends javax.swing.JFrame {
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(49, 49, 49)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(filterPanel)
                                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 797,
                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(layout.createSequentialGroup()
@@ -157,7 +194,12 @@ public class Track extends javax.swing.JFrame {
                                                         .addComponent(jLabel2)
                                                         .addComponent(bid, javax.swing.GroupLayout.PREFERRED_SIZE, 28,
                                                                 javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addGap(30, 30, 30)
+                                .addGap(10, 10, 10)
+                                .addComponent(filterPanel,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE,
+                                        javax.swing.GroupLayout.DEFAULT_SIZE,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(10, 10, 10)
                                 .addComponent(jButton1)
                                 .addGap(26, 26, 26)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
@@ -166,49 +208,9 @@ public class Track extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jButton1MouseClicked
-
-        String date = bid.getText().trim();
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-
-        String query = "SELECT * FROM bill WHERE date >= ? "
-                + "AND date < DATE_ADD(?, INTERVAL 1 DAY)";
-
-        try (
-                Connection con = DatabaseConnection.getConnection();
-                PreparedStatement stmt = con.prepareStatement(query)) {
-            stmt.setString(1, date);
-            stmt.setString(2, date);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-
-                // Evita duplicação de registros
-                model.setRowCount(0);
-
-                while (rs.next()) {
-                    String billNumber = rs.getString("biilno");
-                    String itemId = rs.getString("item_id");
-                    String itemName = rs.getString("item_name");
-                    String quantity = rs.getString("quantity");
-                    String price = rs.getString("price");
-                    String billDate = rs.getString("date");
-
-                    model.addRow(new Object[] {
-                            billNumber,
-                            itemId,
-                            itemName,
-                            quantity,
-                            price,
-                            billDate
-                    });
-                }
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage());
-        }
-
-    }// GEN-LAST:event_jButton1MouseClicked
+    private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {
+        // Search is handled by the action listener.
+    }
 
     private void jButton2MouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_jButton2MouseClicked
         this.setVisible(false);
@@ -217,8 +219,123 @@ public class Track extends javax.swing.JFrame {
     }// GEN-LAST:event_jButton2MouseClicked
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
-        jButton1MouseClicked(null);
-    }// GEN-LAST:event_jButton1ActionPerformed
+        loadSales();
+    }
+
+    private void loadSales() {
+
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+        model.setRowCount(0);
+
+        String startText = bid.getText().trim();
+        String endText = endDate.getText().trim();
+        String product = productFilter.getText().trim();
+
+        LocalDate start = null;
+        LocalDate end = null;
+
+        // Validacao das datas
+        try {
+
+            if (!startText.isEmpty()) {
+                start = LocalDate.parse(startText);
+            }
+
+            if (!endText.isEmpty()) {
+                end = LocalDate.parse(endText);
+            }
+
+        } catch (DateTimeParseException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Invalid date. Use YYYY-MM-DD.",
+                    "Invalid date",
+                    JOptionPane.WARNING_MESSAGE);
+
+            return;
+        }
+
+        if (start != null && end != null && start.isAfter(end)) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Start date cannot be after end date.");
+
+            return;
+        }
+
+        // Montagem da consulta
+        StringBuilder query = new StringBuilder(
+                "SELECT biilno, item_id, item_name, quantity, "
+                        + "price, totprice, date FROM bill WHERE 1 = 1");
+
+        if (start != null) {
+            query.append(" AND date >= ?");
+        }
+
+        if (end != null) {
+            query.append(" AND date < DATE_ADD(?, INTERVAL 1 DAY)");
+        }
+
+        if (!product.isEmpty()) {
+            query.append(" AND item_name LIKE ?");
+        }
+
+        query.append(" ORDER BY date DESC");
+
+        try (
+                Connection con = DatabaseConnection.getConnection();
+                PreparedStatement stmt = con.prepareStatement(query.toString())) {
+
+            int index = 1;
+
+            if (start != null) {
+                stmt.setDate(index++, java.sql.Date.valueOf(start));
+            }
+
+            if (end != null) {
+                stmt.setDate(index++, java.sql.Date.valueOf(end));
+            }
+
+            if (!product.isEmpty()) {
+                stmt.setString(index++, "%" + product + "%");
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+
+                    model.addRow(new Object[] {
+                            rs.getString("biilno"),
+                            rs.getString("item_id"),
+                            rs.getString("item_name"),
+                            rs.getInt("quantity"),
+                            rs.getDouble("price"),
+                            rs.getDouble("totprice"),
+                            rs.getString("date")
+                    });
+                }
+            }
+
+            if (model.getRowCount() == 0) {
+
+                JOptionPane.showMessageDialog(
+                        this, "No sales found.");
+            }
+
+        } catch (SQLException e) {
+
+            model.setRowCount(0);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error loading sales: " + e.getMessage(),
+                    "Database error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     private void tableMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_tableMouseClicked
 
